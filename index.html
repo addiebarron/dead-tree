@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content="./screenshot.png" />
+    <title>tree</title>
+    <script src="lib/p5.js"></script>
+    <!-- <script src="libraries/p5.sound.js"></script> -->
+    <script src="sketch.js"></script>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <header>
+      <h1>Settings</h1>
+      <form id="settings">
+        <fieldset>
+          <legend>structure:</legend>
+
+          <label for="phiSlider">angle:</label>
+          <input
+            name="phiSlider"
+            type="range"
+            id="phiSlider"
+            min="0.1"
+            max="1.5"
+            step="0.1"
+            value="0.5"
+          />
+          <br />
+          <label for="lengthSlider">size:</label>
+          <input
+            name="lengthSlider"
+            type="range"
+            id="lengthSlider"
+            min="10"
+            max="200"
+            step="10"
+            value="100"
+          />
+          <!-- 
+          <br />
+          <label for="depthSlider"># of branchings:</label>
+          <input
+            name="depthSlider"
+            type="range"
+            id="depthSlider"
+            min="1"
+            max="5"
+            step="1"
+            value="3"
+          /> 
+          -->
+        </fieldset>
+
+        <label for="speed">speed:</label>
+        <input
+          name="speed"
+          type="range"
+          id="speedSlider"
+          min="10"
+          max="1000"
+          step="10"
+          value="100"
+        />
+
+        <label for="drawonce">draw all at once?</label>
+        <input
+          type="checkbox"
+          name="drawonce"
+          value="unchecked"
+          id="drawOnceCheck"
+        />
+
+        <button type="reset" id="resetBtn" name="Reset">reset!</button>
+      </form>
+    </header>
+  </body>
+</html>
