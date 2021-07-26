@@ -12,6 +12,7 @@ class LSystem {
   }
 
   iter(n = 1, v = false) {
+    // Debug logging
     if (v) {
       console.log(`Starting state: ${this.state}`);
       console.log(`Rules: `);
@@ -21,12 +22,33 @@ class LSystem {
       console.log(`Applying rules ${n} time${n != 1 ? "s" : ""}...`);
     }
 
+    // Handle rules
     for (let i = 0; i < n; i++) {
-      let keys = Object.keys(this.rules);
-      let re = new RegExp(`${keys.join("|")}`, "g");
+      let newState = "";
+      // only handle single-character rules for now
+      for (let j = 0; j < this.state.length; j++) {
+        let char = this.state.charAt(j);
+        let rule = this.rules[char];
+        // probabilistic rules
+        if (typeof rule == "object") {
+          let roll = Math.random() * 100;
+          for (let chance of rule) {
+            if (roll < chance.prob) {
+              newState += chance.rule;
+              break;
+            } else {
+              roll -= chance.prob;
+            }
+          }
+          // standard rules
+        } else if (typeof rule == "string") {
+          newState += this.rules[char];
+        } else {
+          newState += char;
+        }
+      }
 
-      this.state = this.state.replace(re, (key) => this.rules[key]);
-
+      this.state = newState;
       if (v) console.log(`New State: ${this.state}`);
     }
 
@@ -38,7 +60,7 @@ class LSystem {
   init(n) {
     this.i = 0;
     this.state = this.axiom;
-    if (n) this.iter(n);
+    if (n) this.iter(n, true);
   }
 
   next(drawFunc) {
@@ -52,7 +74,6 @@ class LSystem {
 
 const artist = {
   init: () => {
-    this.length = baseLength;
     for (i = 0; i < L.n; i++) pop();
     resetMatrix();
     background(50);
@@ -64,8 +85,8 @@ const artist = {
     switch (char) {
       case "F":
         //stroke("saddlebrown");
-        line(0, 0, 0, -length);
-        translate(0, -length);
+        line(0, 0, 0, -branchLength);
+        translate(0, -branchLength);
         break;
 
       case "+":
@@ -78,12 +99,12 @@ const artist = {
 
       case "[":
         push();
-        this.length *= lengthVar;
+        branchLength *= scaleVar;
         break;
 
       case "]":
         pop();
-        this.length /= lengthVar;
+        branchLength /= scaleVar;
         break;
 
       case "L":
@@ -102,15 +123,23 @@ const artist = {
         break;
     }
   },
-  length: 100,
 };
 
 // Init
 
-let depth, phi, baseLength, lengthVar, speed, drawOnce, inputs;
+let depth, phi, branchLength, scaleVar, speed, inputs;
 
-const L = new LSystem("FL+-[]", "F", {
-  F: "F[+F-F+FFL][-FF+F-FL]",
+let L = new LSystem("FL+-[]L", "F", {
+  F: [
+    {
+      prob: 60,
+      rule: "F[+F-F+FF][-FF+F-F]",
+    },
+    {
+      prob: 40,
+      rule: "F",
+    },
+  ],
 });
 
 // Initialize DOM elements and read input values
@@ -120,9 +149,7 @@ function DOMinit() {
   inputs = {
     phi: select("#phiSlider"),
     speed: select("#speedSlider"),
-    length: select("#lengthSlider"),
-    depth: select("#depthSlider"),
-    drawOnce: select("#drawOnceCheck"),
+    scale: select("#scaleSlider"),
     reset: select("#resetBtn"),
   };
 
@@ -132,15 +159,14 @@ function DOMinit() {
   };
 }
 
-// Load the form params into memory
+// Reset params to slider values
 const updateParams = () => {
+  depth = 6;
+  scaleVar = 0.5;
+
   phi = inputs.phi.value();
   speed = inputs.speed.value();
-  baseLength = inputs.length.value();
-  //depth = inputs.depth.value();
-  depth = 5;
-  drawOnce = inputs.drawOnce.checked();
-  lengthVar = 0.5;
+  branchLength = inputs.scale.value();
 };
 
 // Reset the entire sketch with params from the form
@@ -150,6 +176,7 @@ function initSketch() {
   artist.init();
 }
 
+// p5 Structure functions
 function setup() {
   DOMinit();
   initSketch();
@@ -157,11 +184,7 @@ function setup() {
 
 function draw() {
   pop();
-  if (inputs.drawOnce.checked()) {
-    speed = L.state.length;
-  } else {
-    speed = inputs.speed.value();
-  }
+  speed = inputs.speed.value();
   for (let i = 0; i < speed; i++) {
     L.next(artist.draw);
   }
