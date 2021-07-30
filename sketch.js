@@ -183,6 +183,7 @@ function setup() {
 }
 
 function draw() {
+  // noLoop();
   pop();
   speed = inputs.speed.value();
   for (let i = 0; i < speed; i++) {
